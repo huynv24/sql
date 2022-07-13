@@ -1,0 +1,19 @@
+ String nativeSQL = "select B.Days, ifnull(C.count,0), ifnull(C.sum,0)\n" +
+                "from (\n" +
+                "\tselect A.Days\n" +
+                "\tfrom (\n" +
+                "\tSELECT curdate() - INTERVAL (a.a + (10 * b.a) + (100 * c.a)) DAY AS Days\n" +
+                "\tFROM (SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) AS a\n" +
+                "\tCROSS JOIN (SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) AS b\n" +
+                "\tCROSS JOIN (SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) AS c\n" +
+                "\t) A\n" +
+                "\t) B\n" +
+                "left join \n" +
+                "(select date(r.requested_at) as Days, count(r.id) as count, sum(r.unit_used) as sum from table.requests r \n" +
+                "where r.user_id="+userID+" and r.service_categories_id="+serviceCateID+" \n"+
+                "group by Days) C\n" +
+                "on C.Days = B.Days\n" +
+                "where B.Days between date(FROM_UNIXTIME("+startTime/1000+")) and  date(FROM_UNIXTIME("+endTime/1000+"))\n" +
+                "order by B.Days;";
+                
+                return dslContext.fetch(nativeSQL).into(ShortOverview.class);
